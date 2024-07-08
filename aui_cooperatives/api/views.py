@@ -1,9 +1,7 @@
-# views.py
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegistrationSerializer
+from .serializers import LoginSerializer, UserRegistrationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -15,4 +13,15 @@ def register_user(request):
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
         return Response({"access": access_token}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+def login_user(request):
+    serializer = LoginSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.validated_data["user"]
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        return Response({"access": access_token}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
