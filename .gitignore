@@ -10,3 +10,4 @@ __pycache__/
 # Ignore IDE and editor specific files (optional)
 .vscode/
 *.idea/
+Pipfile
