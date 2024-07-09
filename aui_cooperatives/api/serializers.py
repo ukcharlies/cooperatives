@@ -16,7 +16,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "username",
             "first_name",
             "last_name",
             "department",
@@ -30,7 +29,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User(
-            username=validated_data["email"],  # Assuming username is the email
+            username=validated_data["email"],  # Set username as email
             email=validated_data["email"],
             first_name=validated_data["first_name"],
             last_name=validated_data["last_name"],
@@ -38,9 +37,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data["password"])
         user.save()
 
+        # Handle department correctly
+        department = Department.objects.get(id=1)
+
         UserProfile.objects.create(
             user=user,
-            department=validated_data["department"],
+            department=department,
             address=validated_data["address"],
             phone=validated_data["phone"],
             employment_number=validated_data["employment_number"],
