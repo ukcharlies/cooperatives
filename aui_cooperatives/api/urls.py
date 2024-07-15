@@ -7,4 +7,5 @@ urlpatterns = [
     path("user/", get_user),
     path("news/", get_news_events),
     path("unverified/users/", unverified_users),
+    path("verify-user/<int:user_id>/", verify_user),
 ]

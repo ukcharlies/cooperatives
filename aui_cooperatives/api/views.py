@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsSuperUser
-from .models import UserProfile
+from .models import UserProfile, User
 from .serializers import UserRegistrationSerializer, LoginSerializer
 
 
@@ -57,6 +57,29 @@ def unverified_users(request):
 
     # Return the list as a JSON response
     return Response(unverified_users_list, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsSuperUser])
+def verify_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user_profile = UserProfile.objects.get(user=user)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User does not exist."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except UserProfile.DoesNotExist:
+        return Response(
+            {"error": "UserProfile does not exist."}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    user_profile.is_verified = True
+    user_profile.save()
+
+    return Response(
+        {"message": "User verified successfully."}, status=status.HTTP_200_OK
+    )
 
 
 @api_view(["GET"])
