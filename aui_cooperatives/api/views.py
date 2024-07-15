@@ -1,3 +1,5 @@
+from bs4 import BeautifulSoup
+import requests
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -56,3 +58,61 @@ def get_user(request):
         "is_verified": user_profile.is_verified,
     }
     return Response(user_data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def get_news_events(request):
+    url = "https://augustineuniversity.edu.ng/News_Events"
+    headers = {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+        "Referer": "https://augustineuniversity.edu.ng/",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        return Response(
+            {"error": "Failed to fetch news."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    # Parse the HTML content
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    # Extract the specific div elements
+    target_section = soup.select_one(
+        "section > .container.mt-30.mb-30.pt-30.pb-30 > .row > .col-md-9 > .blog-posts.single-post"
+    )
+    data_list = []
+
+    if target_section:
+        divs = target_section.find_all(
+            "div", class_="col-xs-12 col-sm-6 col-md-6 mb-30 wow fadeInRight"
+        )
+
+        for div in divs:
+            title_tag = div.find("h4").find("a")
+            img_tag = div.find("img")
+            date_tag = div.find("li", class_="pr-0")
+            location_tag = div.find("li", class_="pl-5")
+
+            title = title_tag.text.strip()
+            img_url = "https://augustineuniversity.edu.ng/" + img_tag["src"]
+            href = "https://augustineuniversity.edu.ng/" + title_tag["href"]
+            date = date_tag.text.strip().replace("|", "").strip()
+            location = location_tag.text.strip()
+
+            desc = f"{location}, {date}"
+
+            data_list.append(
+                {"title": title, "thumbnail": img_url, "href": href, "desc": desc}
+            )
+
+        return Response(data_list, status=status.HTTP_200_OK)
+    else:
+        return Response(
+            {"error": "Failed to fetch news."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
