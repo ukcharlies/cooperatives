@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from .permissions import IsSuperUser
 from .models import UserProfile
 from .serializers import UserRegistrationSerializer, LoginSerializer
 
@@ -33,6 +34,29 @@ def login_user(request):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated, IsSuperUser])
+def unverified_users(request):
+    # Get all users whose UserProfile.is_verified is False
+    unverified_profiles = UserProfile.objects.filter(is_verified=False)
+
+    # Create a list of dictionaries with the required fields
+    unverified_users_list = []
+    for profile in unverified_profiles:
+        user = profile.user
+        user_data = {
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "employment_number": profile.employment_number,
+            "department": profile.department.name if profile.department else None,
+        }
+        unverified_users_list.append(user_data)
+
+    # Return the list as a JSON response
+    return Response(unverified_users_list, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user(request):
     user = request.user
@@ -56,6 +80,7 @@ def get_user(request):
         "phone": user_profile.phone,
         "employment_number": user_profile.employment_number,
         "is_verified": user_profile.is_verified,
+        "is_superuser": user.is_superuser,  # Add this line to include superuser status
     }
     return Response(user_data, status=status.HTTP_200_OK)
 
