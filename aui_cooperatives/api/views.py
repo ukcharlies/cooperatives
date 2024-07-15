@@ -44,11 +44,14 @@ def unverified_users(request):
     for profile in unverified_profiles:
         user = profile.user
         user_data = {
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "email": user.email,
-            "employment_number": profile.employment_number,
+            "id": user.id,
+            "firstName": user.first_name,
+            "lastName": user.last_name,
             "department": profile.department.name if profile.department else None,
+            "employmentNumber": profile.employment_number,
+            "address": profile.address,
+            "phoneNumber": profile.phone,
+            "email": user.email,
         }
         unverified_users_list.append(user_data)
 
