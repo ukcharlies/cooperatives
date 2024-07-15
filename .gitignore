@@ -12,3 +12,4 @@ __pycache__/
 *.idea/
 Pipfile
 aui_cooperatives/db.sqlite3
+aui_cooperatives/db.sqlite3
