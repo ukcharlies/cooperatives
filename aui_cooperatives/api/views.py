@@ -59,7 +59,7 @@ def unverified_users(request):
     return Response(unverified_users_list, status=status.HTTP_200_OK)
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated, IsSuperUser])
 def verify_user(request, user_id):
     try:

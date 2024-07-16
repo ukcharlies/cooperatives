@@ -11,3 +11,5 @@ __pycache__/
 .vscode/
 *.idea/
 Pipfile
+aui_cooperatives/db.sqlite3
+aui_cooperatives/db.sqlite3
